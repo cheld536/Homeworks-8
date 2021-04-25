@@ -325,6 +325,7 @@ int invertList(listNode* h) {
 int insertNode(listNode* h, int key) {
 	listNode* newnode = (listNode*)malloc(sizeof(listNode));		// 노드를 입력받을 노드 
 	listNode* findnode;												// 리스트를 탐색할 노드
+	listNode* pre = NULL;											// findnode의 이전 주소를 담을 노드
 	
 	newnode->key = key;												// 사용자로부터 입력받을 노드 초기화
    	newnode->rlink = NULL;
@@ -336,6 +337,8 @@ int insertNode(listNode* h, int key) {
 		newnode->llink = h;
 		h->llink = newnode;
 		newnode->rlink = h;
+		
+		
 	}
 	else												// 노드가 비어있지 않을때
 	{	
@@ -345,35 +348,34 @@ int insertNode(listNode* h, int key) {
 			findnode=findnode->rlink;
 			if(findnode->key >= newnode->key)
 				break;
+			pre = findnode;					
 		}
 		
-		if(findnode->rlink == NULL)				// 찾는 값이 처음 값보다 작을때
+		if( pre == NULL)				// 찾는 값이 처음 값보다 작을때 이전 노드는 작동 하지 않았으므로
 		{
-			newnode->rlink = h->rlink;
-			h->rlink->llink = newnode;
-			newnode->llink = h;
 			h->rlink = newnode;
+			newnode->llink = h;
+			newnode->rlink = findnode;
+			findnode -> llink = newnode;
 		}
-		else if (findnode->rlink == h)		 // 입력된 값이 젤 마지막에 들어갈때
+		else if (pre->rlink == h)		 // 입력된 값이 젤 마지막에 들어갈때
 		{
-			newnode->llink = h->llink;
-			h->llink->rlink = newnode;
+			findnode->rlink = newnode;
+			newnode->llink = h;
 			newnode->rlink = h;
 			h->llink = newnode;
+			
 		}
 		else								// 중간에 값이 들어 갈때
 		{
-			newnode->llink = findnode->llink;
-			findnode->llink->rlink = newnode;
+			pre->rlink=newnode;
 			newnode->rlink = findnode;
 			findnode->llink = newnode;
-
+			newnode->llink = pre;
 		}
 
 
 	}
-
-
 
 
 	return 0;
@@ -395,9 +397,19 @@ int deleteNode(listNode* h, int key) {
 		printf("노드가 비었습니다.\n");
 		return 1;
 	}
-	else{
-		
-
+	else
+	{
+		findnode = h;
+		while (findnode->rlink != h)
+		{
+			findnode= findnode->rlink;
+			if(findnode->key == key)
+				break;
+		}
+		if(findnode->rlink == NULL)
+		{
+			
+		}
 
 	}
 	return 0;

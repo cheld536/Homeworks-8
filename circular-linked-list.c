@@ -122,7 +122,14 @@ int initialize(listNode** h) {
 
 /* 메모리 해제 */
 int freeList(listNode* h){
-
+	listNode *findnode = h->rlink;				
+	listNode *prev = NULL;
+	while (findnode != NULL && findnode != h) {		// findnode가 NULL이 아니면
+		prev = findnode;							// findnode를 변경하기 전에 prev에 기억
+		findnode = findnode->rlink;					// findnode를 다음 노드로 이동
+		free(prev);									// 이전 노드 해제 
+	}
+	free(h);							// 헤더 해제
 	return 0;
 }
 
@@ -170,7 +177,20 @@ void printList(listNode* h) {
  * list에 key에 대한 노드하나를 추가
  */
 int insertLast(listNode* h, int key) {
+	listNode* newNode = (listNode*)malloc(sizeof(listNode));		//삽입할 노드를 동적할당한다.
+	listNode* findNode;												//노드를 탐색할 노드
+	newNode->key = key;												//입력받은 키값을 새로운 노드에 저장										
+	listNode* first;												//처음 주소값을 저장할 노드
+	first =h;														//first에 처음 주소값을 저장
+	findNode = h;													//헤드 부터 탐색하기 위해 탐색 노드에 처음 주소 값을 저장
+	while (findNode->rlink != NULL && findNode->rlink != first)		// lastNode가 널 값을 만나거나 맨 앞을 만날때 까지
+		findNode = findNode->rlink;									// 다음 주소로 넘어감
 
+	newNode->llink = findNode;										// 새로운 노드의 왼쪽에 이전 노드를 위치시킴
+	newNode->rlink = first;											// 새로운 노드의 오른쪽에 헤더를 가르킴
+	findNode->rlink = newNode;										// 마지막 노드의 오른쪽에 새로운 노드를 위치시킴
+	first->llink =newNode;											// 헤더의 왼쪽에 새로운 노드를 위치 시킴
+	
 	return 1;
 }
 
@@ -180,7 +200,31 @@ int insertLast(listNode* h, int key) {
  */
 int deleteLast(listNode* h) {
 
+	listNode* first = h;
+	listNode* prev = NULL;
 
+	if(first == NULL)									//헤더가 가르키는 노드가 없을때						
+	{
+		printf("노드가 비었습니다.\n");
+		return 1;										// 0을 반환
+	}
+	if(first->rlink == h)								// 헤더가 자기 자신을 가르킬때.
+	{
+		printf("노드를 지울수없습니다.\n");
+		return 1;
+	}
+	
+	while(h->rlink != first)
+	{
+		prev = h;											// 이전 주소를 저장
+		h= h->rlink;										// 다음 주소로 이동
+	}
+	
+	prev->rlink= first;										// 이전노드의 다음 노드를 헤더로 변경
+	first->llink = prev;										// 헤더의 llink를 이전 노드로 변경
+	free (h);													// 마지막 노드를 해제
+
+	
 	return 1;
 }
 
@@ -189,7 +233,25 @@ int deleteLast(listNode* h) {
  * list 처음에 key에 대한 노드하나를 추가
  */
 int insertFirst(listNode* h, int key) {
+	listNode* newnode = (listNode*)malloc(sizeof(listNode));			// 사용자로부터 새로운 값을 입력받을 노드를 동적 할당한다.
+	newnode->key = key;													//새로운 노드를 초기화한다.
+	newnode->rlink = NULL;
+	newnode->llink = NULL;
 
+	
+	if(h->rlink == h)													// 헤더가 비어 있을 때
+	{							
+		h->rlink = newnode;												//헤더의 다음노드를 newnode로 설정
+		newnode->rlink = h;												//newnode의 다음노드를 헤더로 설정
+		newnode->llink = h;												//newnode의 이전노드를 헤더로 설정
+		h->llink = newnode;												//헤더의 이전노드를 newnode로 설정
+	}
+	else{																// 노드가 한 개 이상 있을 때 
+		newnode->rlink = h->rlink;										// newnode의 오른쪽에 h.rlink의 노드가 위치하게 한다.
+		h->rlink->llink = newnode;										// h.rlink의 노드의 왼쪽에 newnode가 위치하게 한다.
+		h->rlink = newnode;												// 헤더의 오른족에 newnode를 위치하게 한다.					
+		newnode->llink = h;												// newnode의 왼쪽이 헤더가 위치하게 한다.
+	}
 
 	return 1;
 }
@@ -199,6 +261,25 @@ int insertFirst(listNode* h, int key) {
  */
 int deleteFirst(listNode* h) {
 
+	listNode* removenode = h->rlink;
+	if(h->rlink == h)
+	{
+		printf("노드를 지울 수 없습니다.\n");
+		return 1;
+	}
+	else if(h == NULL)
+	{
+		printf("노드가 비었습니다.\n");
+		return 1;
+	}
+	else
+	{
+		h->rlink = removenode->rlink;
+		removenode->rlink->llink = h;
+		free(removenode);
+
+	}
+	
 
 	return 1;
 
@@ -209,6 +290,28 @@ int deleteFirst(listNode* h) {
  * 리스트의 링크를 역순으로 재 배치
  */
 int invertList(listNode* h) {
+	listNode* first = h;	//  처음 주소를저장하는 노드
+	listNode* p;			//	헤드는 가만히 있고 나머지 노드들이 바뀌기 때문에 h.rlist 주소를 담는 노드
+	listNode* q;			//	역순으로 변경해주기 위한 q,r노드들
+	listNode* r;			
+	p = h->rlink;			// 포인터 p를 h.rlist로 초기화
+	q = h;					// q
+	r = NULL;			
+	if(h ->rlink == h )
+	{
+		printf("노드가 비었습니다.\n");
+		return 1;
+	}
+	while (p != first) {		// 리스트의첫 번째 노드부터 링크를 따라 다음 노드로 이동하면서 노드간 연결을 바꾼다.
+		r = q;				// r에 q의 주소값 전달
+		q = p;				// q에 p 노드의 정보를 저장
+		p = p->rlink;		// 다음 노드를 찾는다.
+		q->rlink = r;		// q의 오른쪽에 r을 위치 시킴
+		r->llink = q;		// r의 왼쪽에 q를 위치시킴.
+	}
+	first->rlink = q;	// 역순으로 배치하기 위해서 헤더의 오른쪽에 q를 위치 시킴	
+	q->llink = first;	// q의 왼쪽에 헤더를 위치
+
 
 
 	return 0;
@@ -220,6 +323,58 @@ int invertList(listNode* h) {
  *  리스트를 검색하여, 입력받은 key보다 큰값이 나오는 노드 바로 앞에 삽입 
  **/
 int insertNode(listNode* h, int key) {
+	listNode* newnode = (listNode*)malloc(sizeof(listNode));		// 노드를 입력받을 노드 
+	listNode* findnode;												// 리스트를 탐색할 노드
+	
+	newnode->key = key;												// 사용자로부터 입력받을 노드 초기화
+   	newnode->rlink = NULL;
+    newnode->llink = NULL;
+
+	if(h->rlink == h)									// 헤더가 비었을때
+	{
+		h->rlink = newnode;
+		newnode->llink = h;
+		h->llink = newnode;
+		newnode->rlink = h;
+	}
+	else												// 노드가 비어있지 않을때
+	{	
+		findnode = h;
+		while (findnode->rlink != h )
+		{
+			findnode=findnode->rlink;
+			if(findnode->key >= newnode->key)
+				break;
+		}
+		
+		if(findnode->rlink == NULL)				// 찾는 값이 처음 값보다 작을때
+		{
+			newnode->rlink = h->rlink;
+			h->rlink->llink = newnode;
+			newnode->llink = h;
+			h->rlink = newnode;
+		}
+		else if (findnode->rlink == h)		 // 입력된 값이 젤 마지막에 들어갈때
+		{
+			newnode->llink = h->llink;
+			h->llink->rlink = newnode;
+			newnode->rlink = h;
+			h->llink = newnode;
+		}
+		else								// 중간에 값이 들어 갈때
+		{
+			newnode->llink = findnode->llink;
+			findnode->llink->rlink = newnode;
+			newnode->rlink = findnode;
+			findnode->llink = newnode;
+
+		}
+
+
+	}
+
+
+
 
 	return 0;
 }
@@ -229,7 +384,22 @@ int insertNode(listNode* h, int key) {
  * list에서 key에 대한 노드 삭제
  */
 int deleteNode(listNode* h, int key) {
+	listNode* findnode;
+	if(h->rlink == h)
+	{
+		printf("노드를 지울 수 없습니다.\n");
+		return 1;
+	}
+	else if(h == NULL)
+	{
+		printf("노드가 비었습니다.\n");
+		return 1;
+	}
+	else{
+		
 
+
+	}
 	return 0;
 }
 

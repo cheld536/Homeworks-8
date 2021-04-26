@@ -52,6 +52,9 @@ int main()
 		printf(" Insert First  = f           Delete First  = t\n");
 		printf(" Invert List   = r           Quit          = q\n");
 		printf("----------------------------------------------------------------\n");
+		printf("--------------[ 김 윤 희 ] ----------[ 2018038014 ]--------------\n");
+		printf("----------------------------------------------------------------\n");
+		
 
 		printf("Command = ");
 		scanf(" %c", &command);
@@ -261,18 +264,18 @@ int insertFirst(listNode* h, int key) {
  */
 int deleteFirst(listNode* h) {
 
-	listNode* removenode = h->rlink;
-	if(h->rlink == h)
+	listNode* removenode = h->rlink;				// 첫번째 노드를 지우기 위한 removenode 선언 첫번째 노드의 위치로 위치 시킨다.
+	if(h->rlink == h)								// 만약 헤더 밖에 없을때
 	{
 		printf("노드를 지울 수 없습니다.\n");
 		return 1;
 	}
-	else if(h == NULL)
+	else if(h == NULL)								// 헤더가 비었을때
 	{
 		printf("노드가 비었습니다.\n");
 		return 1;
 	}
-	else
+	else											// 그 외에 경우 
 	{
 		h->rlink = removenode->rlink;
 		removenode->rlink->llink = h;
@@ -345,13 +348,14 @@ int insertNode(listNode* h, int key) {
 		findnode = h;
 		while (findnode->rlink != h )
 		{
+			
 			findnode=findnode->rlink;
 			if(findnode->key >= newnode->key)
 				break;
-			pre = findnode;					
+			pre = findnode;	
 		}
 		
-		if( pre == NULL)				// 찾는 값이 처음 값보다 작을때 이전 노드는 작동 하지 않았으므로
+		if( pre == NULL)				// 찾는 값이 처음 값보다 작을때 findnode의 이전노드의 주소값이 저장 되지 않으므로 
 		{
 			h->rlink = newnode;
 			newnode->llink = h;
@@ -386,29 +390,41 @@ int insertNode(listNode* h, int key) {
  * list에서 key에 대한 노드 삭제
  */
 int deleteNode(listNode* h, int key) {
-	listNode* findnode;
-	if(h->rlink == h)
+	listNode* findnode = NULL;						// 탐색 노드
+	listNode* prev = NULL; 							// 탐색 노드의 이전 노드 저장
+	if(h->rlink == h)								// 헤더 밖에 없을때
 	{
 		printf("노드를 지울 수 없습니다.\n");
 		return 1;
 	}
-	else if(h == NULL)
+	else if(h == NULL)								// 헤더가 비었을때
 	{
 		printf("노드가 비었습니다.\n");
 		return 1;
 	}
 	else
 	{
-		findnode = h;
-		while (findnode->rlink != h)
+		findnode = h;								// 헤더의 주소를 findnode에 저장한다.
+		while (findnode->rlink != h)				// 탐색 노드가 헤더를 만날 때 까지
 		{
-			findnode= findnode->rlink;
-			if(findnode->key == key)
+			prev = findnode;						// 탐색 하기전에 이전 노드에 탐색 노드의 주소를 저장
+			findnode= findnode->rlink;				// 다음 이동
+			if(findnode->key == key)				// 탐색하는 값이 입력값과 같을 때
 				break;
-		}
-		if(findnode->rlink == NULL)
-		{
+								
 			
+		}
+		if(prev == findnode)								// 이전 노드와 탐색노드 위치가 같을 떄
+		{
+			h->rlink = findnode->rlink;						
+			findnode->rlink->llink = h;
+			free(findnode);
+		}
+		else											// 그외에 탐색하는 값이 중간에 있을 때 
+		{
+			prev->rlink = findnode->rlink;
+			findnode->rlink->llink = prev;
+			free(findnode);
 		}
 
 	}
